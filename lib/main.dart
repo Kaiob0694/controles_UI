@@ -1,121 +1,186 @@
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const MyApp());
+ 
+void main() => runApp(const AppCursos());
+ 
+class Curso {
+  final String titulo;
+  final String categoria;
+  final IconData icone;
+  final int horas;
+  
+ 
+  const Curso(this.titulo, this.categoria, this.icone, this.horas);
 }
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
+ 
+const categorias = ['Programação', 'Design', 'Negócios', 'Dados' ];
+ 
+const cursos = [
+  Curso('Flutter na prática', 'Programação', Icons.code, 230),
+  Curso('Orientação a objetos', 'Programação', Icons.account_tree, 100),
+  Curso('Interfaces acessíveis', 'Design', Icons.accessibility_new, 150),
+  Curso('Design de interfaces', 'Design', Icons.palette, 215),
+  Curso('Banco SQL', 'Dados', Icons.business_outlined, 215),
+  Curso('Gestão de projetos', 'Negócios', Icons.business_center, 150),
+];
+ 
+class AppCursos extends StatelessWidget {
+  const AppCursos({super.key});
+ 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        colorSchemeSeed: Colors.indigo,
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: DefaultTabController(
+        length: categorias.length,
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Explore cursos'),
+            bottom: TabBar(
+              tabs: [
+                for (final categoria in categorias)
+                  Tab(text: categoria),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            children: [
+              for (final categoria in categorias)
+                ListaCursos(categoria: categoria),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
+ 
+class ListaCursos extends StatelessWidget {
+  final String categoria;
+ 
+  const ListaCursos({super.key, required this.categoria});
+ 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+    final filtrados =
+        cursos.where((curso) => curso.categoria == categoria).toList();
+ 
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: filtrados.length,
+      itemBuilder: (context, index) {
+        final curso = filtrados[index];
+ 
+        return CursoCard(
+          curso: curso,
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => DetalhesCurso(curso: curso),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+ 
+class CursoCard extends StatelessWidget {
+  final Curso curso;
+  final VoidCallback onTap;
+ 
+  const CursoCard({
+    super.key,
+    required this.curso,
+    required this.onTap,
+  });
+ 
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
+        leading: Hero(
+          tag: curso.titulo,
+          child: Icon(curso.icone, size: 36),
         ),
+        title: Text(curso.titulo),
+        subtitle: Text(curso.categoria),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+    );
+  }
+}
+ 
+class DetalhesCurso extends StatefulWidget {
+  final Curso curso;
+ 
+  const DetalhesCurso({super.key, required this.curso});
+ 
+  @override
+  State<DetalhesCurso> createState() => _DetalhesCursoState();
+}
+ 
+class _DetalhesCursoState extends State<DetalhesCurso> {
+  bool favorito = false;
+ 
+  @override
+  Widget build(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+    final reduzirMovimento = MediaQuery.disableAnimationsOf(context);
+ 
+    return Scaffold(
+      appBar: AppBar(title: const Text('Detalhes do curso')),
+      body: ListView(
+        padding: const EdgeInsets.all(24),
+        children: [
+          Hero(
+            tag: widget.curso.titulo,
+            child: Icon(widget.curso.icone, size: 96),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            widget.curso.titulo,
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(widget.curso.categoria),
+          const SizedBox(height: 8),
+          Text('${widget.curso.horas} horas'),
+          const SizedBox(height: 24),
+          Center(
+            child: AnimatedContainer(
+              duration: Duration(
+                milliseconds: reduzirMovimento ? 0 : 200,
+              ),
+              padding: EdgeInsets.all(favorito ? 12 : 4),
+              decoration: BoxDecoration(
+                color: favorito
+                    ? cores.primaryContainer
+                    : cores.surface,
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                tooltip: favorito
+                    ? 'Remover dos favoritos'
+                    : 'Adicionar aos favoritos',
+                isSelected: favorito,
+                selectedIcon: const Icon(Icons.favorite),
+                icon: const Icon(Icons.favorite_border),
+                onPressed: () {
+                  setState(() => favorito = !favorito);
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
